@@ -15,7 +15,7 @@ const WEEKS = {
 
 // ── Student home: lesson overview ─────────────────────────────────────────────
 
-function LessonHome({ currentWeek, user, onSelectWeek }) {
+function LessonHome({ currentWeek, user, onSelectWeek, onLogout }) {
   return (
     <div className="min-h-screen bg-surface-950 flex flex-col">
       <header className="glass border-b border-white/5 px-6 py-3.5 flex items-center justify-between flex-shrink-0">
@@ -23,7 +23,13 @@ function LessonHome({ currentWeek, user, onSelectWeek }) {
           <span className="text-xl">🧠</span>
           <span className="font-display font-700 text-gradient text-lg">WebGenius</span>
         </div>
-        <span className="text-sm text-slate-400">{user?.avatar_emoji || '🧑'} {user?.display_name}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-slate-400">{user?.avatar_emoji || '🧑'} {user?.display_name}</span>
+          <button onClick={onLogout}
+            className="text-xs text-slate-500 hover:text-slate-300 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors">
+            Atsijungti
+          </button>
+        </div>
       </header>
 
       <div className="flex-1 overflow-y-auto">
@@ -233,7 +239,7 @@ const handleReply = (msg) => {
   }
 
   if (!activeWeek) {
-    return <LessonHome currentWeek={currentWeek} user={user} onSelectWeek={selectWeek} />
+    return <LessonHome currentWeek={currentWeek} user={user} onSelectWeek={selectWeek} onLogout={logout} />
   }
 
   return (
