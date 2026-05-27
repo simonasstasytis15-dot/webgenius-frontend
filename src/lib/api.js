@@ -13,10 +13,10 @@ async function request(path, options = {}) {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: 'Request failed' }))
-    throw new Error(err.detail || 'Request failed')
+    const detail = Array.isArray(err.detail) ? err.detail.map(e => e.msg).join(', ') : err.detail
+    throw new Error(detail || 'Request failed')
   }
 
-  // 204 No Content
   if (res.status === 204) return null
   return res.json()
 }
@@ -24,10 +24,7 @@ async function request(path, options = {}) {
 export const api = {
   // Auth
   login: (email, password) =>
-    request('/api/v1/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }),
+    request('/api/v1/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
 
   me: () => request('/api/v1/auth/me'),
 
@@ -35,11 +32,7 @@ export const api = {
   chat: (messages, systemPrompt) =>
     request('/api/v1/ai/chat', {
       method: 'POST',
-      body: JSON.stringify({
-        messages,
-        model: 'flash',
-        system_prompt: systemPrompt,
-      }),
+      body: JSON.stringify({ messages, model: 'flash', system_prompt: systemPrompt }),
     }),
 
   generateImage: (prompt, aspectRatio = '1:1') =>
@@ -66,6 +59,48 @@ export const api = {
       body: JSON.stringify({ prompt, duration_seconds: durationSeconds }),
     }),
 
-  // Student
+  // Baitas AI character
+  baitas: (message, history = [], lessonTitle = '', lessonWeek = 1) =>
+    request('/api/v1/ai/baitas', {
+      method: 'POST',
+      body: JSON.stringify({ message, history, lesson_title: lessonTitle, lesson_week: lessonWeek }),
+    }),
+
+  // Students
   getMyKeys: (studentId) => request(`/api/v1/students/${studentId}/keys`),
+
+  getStudentProgress: (studentId) => request(`/api/v1/students/${studentId}/progress`),
+
+  createStudent: (email, displayName, password, avatarEmoji = '🧑') =>
+    request('/api/v1/students', {
+      method: 'POST',
+      body: JSON.stringify({ email, display_name: displayName, password, avatar_emoji: avatarEmoji }),
+    }),
+
+  // Classes
+  listClasses: () => request('/api/v1/classes'),
+
+  createClass: (name, description = '') =>
+    request('/api/v1/classes', {
+      method: 'POST',
+      body: JSON.stringify({ name, description }),
+    }),
+
+  addStudentToClass: (classId, studentId) =>
+    request(`/api/v1/classes/${classId}/students/${studentId}`, { method: 'POST' }),
+
+  getClassDashboard: (classId) => request(`/api/v1/dashboard/class/${classId}`),
+
+  advanceStudentWeek: (classId, studentId) =>
+    request(`/api/v1/classes/${classId}/students/${studentId}/week`, { method: 'PATCH' }),
+
+  // API Keys
+  setStudentKey: (studentId, provider, apiKey, label = '') =>
+    request(`/api/v1/api-keys/student/${studentId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ provider, api_key: apiKey, label }),
+    }),
+
+  revokeStudentKey: (studentId, provider) =>
+    request(`/api/v1/api-keys/student/${studentId}/${provider}`, { method: 'DELETE' }),
 }

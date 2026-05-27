@@ -88,7 +88,7 @@ export default function Chat() {
     try {
       const apiMessages = newMessages.map(m => ({
         role: m.role,
-        parts: [{ text: m.text }]
+        text: m.text,
       }))
       const res = await api.chat(apiMessages, SYSTEM_PROMPT)
       const replyText = res?.candidates?.[0]?.content?.parts?.[0]?.text || 'Hmm, I had trouble responding. Try again!'
